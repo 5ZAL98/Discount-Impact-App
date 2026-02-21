@@ -21,9 +21,10 @@ export default function App() {
   return (
     <div className={styles.index}>
       <div className={styles.content}>
-        <h1 className={styles.heading}>A short heading about [your app]</h1>
+        <h1 className={styles.heading}>Discount Impact</h1>
         <p className={styles.text}>
-          A tagline about [your app] that describes your value proposition.
+          Analyze how your discounts affect revenue, margins, and customer
+          behavior. Make data-driven decisions about your promotions.
         </p>
         {showForm && (
           <Form className={styles.form} method="post" action="/auth/login">
@@ -39,16 +40,16 @@ export default function App() {
         )}
         <ul className={styles.list}>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Discount Analytics</strong>. See which discounts drive the
+            most revenue and which ones hurt your margins.
           </li>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Revenue Impact</strong>. Track how each promotion affects
+            your overall sales and average order value.
           </li>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Actionable Insights</strong>. Get recommendations to
+            optimize your discount strategy and maximize profitability.
           </li>
         </ul>
       </div>
