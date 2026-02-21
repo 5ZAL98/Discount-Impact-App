@@ -1,8 +1,5 @@
-import type { LoaderFunctionArgs } from "react-router";
-import { redirect } from "react-router";
-import { authenticate } from "../shopify.server";
+import { Navigate } from "react-router";
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  await authenticate.admin(request);
-  return redirect("/app/discount-simulator");
-};
+export default function Index() {
+  return <Navigate to="/app/discount-simulator" replace />;
+}
