@@ -1,8 +1,8 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "05b5bfdd3e00b30fdc02c5b4f6e93f34"
+client_id = "eddfd17bc14a903d500a42e872a650d9"
 name = "Discount Impact"
-application_url = "https://example.com"
+application_url = "https://discount-impact-app-production-e04f.up.railway.app"
 embedded = true
 
 [build]
@@ -25,4 +25,4 @@ api_version = "2025-10"
 scopes = "read_products,read_discounts,read_orders,read_price_rules"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://discount-impact-app-production-e04f.up.railway.app/auth/callback" ]
