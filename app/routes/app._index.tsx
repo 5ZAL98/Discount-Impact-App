@@ -9,7 +9,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const response = await admin.graphql(
     `#graphql
       query {
-        codeDiscountNodes(first: 10, sortKey: CREATED_AT, reverse: true) {
+        codeDiscountNodes(first: 25, sortKey: CREATED_AT, reverse: true) {
           nodes {
             id
             codeDiscount {
@@ -64,52 +64,100 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return { discounts };
 };
 
+function formatDate(dateStr: string | null | undefined) {
+  if (!dateStr) return "—";
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function getDiscountValue(discount: any) {
+  const value = discount.customerGets?.value;
+  if (value?.percentage) {
+    return `${(value.percentage * 100).toFixed(0)}%`;
+  }
+  if (value?.amount) {
+    return `${discount.customerGets.value.amount.currencyCode} ${value.amount.amount}`;
+  }
+  return "Free shipping";
+}
+
+function getStatusTone(status: string) {
+  switch (status) {
+    case "ACTIVE":
+      return "success";
+    case "EXPIRED":
+      return "critical";
+    case "SCHEDULED":
+      return "info";
+    default:
+      return "default";
+  }
+}
+
 export default function Index() {
   const { discounts } = useLoaderData<typeof loader>();
 
   return (
     <s-page heading="Discount Impact">
-      <s-section heading="Your Discounts">
+      <s-section>
         {discounts.length === 0 ? (
-          <s-paragraph>
-            No discounts found. Create discounts in your Shopify admin to start
-            tracking their impact.
-          </s-paragraph>
+          <s-box padding="loose">
+            <s-stack direction="block" gap="base" align="center">
+              <s-heading>No discounts found</s-heading>
+              <s-paragraph>
+                Create discounts in your Shopify admin to start tracking their
+                impact.
+              </s-paragraph>
+            </s-stack>
+          </s-box>
         ) : (
-          <s-stack direction="block" gap="base">
-            {discounts.map((node: any) => {
-              const discount = node.codeDiscount;
-              if (!discount) return null;
+          <s-table>
+            <s-table-header-row>
+              <s-table-header listSlot="primary">Discount</s-table-header>
+              <s-table-header>Code</s-table-header>
+              <s-table-header>Type</s-table-header>
+              <s-table-header>Status</s-table-header>
+              <s-table-header format="numeric">Uses</s-table-header>
+              <s-table-header>Start date</s-table-header>
+              <s-table-header>End date</s-table-header>
+            </s-table-header-row>
+            <s-table-body>
+              {discounts.map((node: any) => {
+                const discount = node.codeDiscount;
+                if (!discount) return null;
 
-              const code = discount.codes?.nodes?.[0]?.code ?? "—";
-              const value = discount.customerGets?.value;
-              let discountValue = "Free shipping";
-              if (value?.percentage) {
-                discountValue = `${(value.percentage * 100).toFixed(0)}% off`;
-              } else if (value?.amount) {
-                discountValue = `${value.amount.currencyCode} ${value.amount.amount} off`;
-              }
+                const code = discount.codes?.nodes?.[0]?.code ?? "—";
+                const discountValue = getDiscountValue(discount);
+                const statusTone = getStatusTone(discount.status);
 
-              return (
-                <s-box
-                  key={node.id}
-                  padding="base"
-                  borderWidth="base"
-                  borderRadius="base"
-                >
-                  <s-stack direction="block" gap="tight">
-                    <s-heading>{discount.title}</s-heading>
-                    <s-paragraph>
-                      Code: <s-text fontWeight="bold">{code}</s-text> |{" "}
-                      Value: <s-text fontWeight="bold">{discountValue}</s-text> |{" "}
-                      Status: <s-text fontWeight="bold">{discount.status}</s-text> |{" "}
-                      Used: <s-text fontWeight="bold">{discount.asyncUsageCount ?? 0}</s-text> times
-                    </s-paragraph>
-                  </s-stack>
-                </s-box>
-              );
-            })}
-          </s-stack>
+                return (
+                  <s-table-row key={node.id}>
+                    <s-table-cell>
+                      <s-text fontWeight="semibold">{discount.title}</s-text>
+                    </s-table-cell>
+                    <s-table-cell>
+                      <s-text>{code}</s-text>
+                    </s-table-cell>
+                    <s-table-cell>{discountValue}</s-table-cell>
+                    <s-table-cell>
+                      <s-badge tone={statusTone}>{discount.status}</s-badge>
+                    </s-table-cell>
+                    <s-table-cell>
+                      {discount.asyncUsageCount ?? 0}
+                      {discount.usageLimit
+                        ? ` / ${discount.usageLimit}`
+                        : ""}
+                    </s-table-cell>
+                    <s-table-cell>{formatDate(discount.startsAt)}</s-table-cell>
+                    <s-table-cell>{formatDate(discount.endsAt)}</s-table-cell>
+                  </s-table-row>
+                );
+              })}
+            </s-table-body>
+          </s-table>
         )}
       </s-section>
     </s-page>
