@@ -5,12 +5,14 @@ export interface DiscountImpactResult {
   currentMarginPercent: number;
   newMarginPercent: number;
   breakEvenIncreasePercent: number | null;
+  breakEvenQuantity: number | null;
 }
 
 export function calculateDiscountImpact(
   price: number,
   cost: number,
   discountPercent: number,
+  baselineUnits: number,
 ): DiscountImpactResult {
   const newPrice = price * (1 - discountPercent / 100);
   const currentProfit = price - cost;
@@ -19,6 +21,10 @@ export function calculateDiscountImpact(
   const newMarginPercent = newPrice > 0 ? (newProfit / newPrice) * 100 : 0;
   const breakEvenIncreasePercent =
     newProfit > 0 ? (currentProfit / newProfit - 1) * 100 : null;
+  const breakEvenQuantity =
+    newProfit > 0 && baselineUnits
+      ? baselineUnits * (1 + breakEvenIncreasePercent! / 100)
+      : null;
 
   return {
     newPrice,
@@ -27,5 +33,6 @@ export function calculateDiscountImpact(
     currentMarginPercent,
     newMarginPercent,
     breakEvenIncreasePercent,
+    breakEvenQuantity,
   };
 }

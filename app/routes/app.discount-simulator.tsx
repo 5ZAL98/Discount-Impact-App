@@ -59,6 +59,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function DiscountSimulator() {
   const { products } = useLoaderData<typeof loader>();
   const [discountPercent, setDiscountPercent] = useState(0);
+  const [baselineUnits, setBaselineUnits] = useState(100);
 
   return (
     <s-page heading="Discount Impact Simulator">
@@ -74,6 +75,19 @@ export default function DiscountSimulator() {
               onChange={(e) => {
                 const val = parseFloat(e.target.value);
                 setDiscountPercent(isNaN(val) ? 0 : Math.min(100, Math.max(0, val)));
+              }}
+              style={{ width: "80px", marginLeft: "8px", padding: "4px 8px", fontSize: "14px" }}
+            />
+          </label>
+          <label style={{ marginLeft: "24px" }}>
+            <s-text fontWeight="semibold">Baseline Units</s-text>
+            <input
+              type="number"
+              value={baselineUnits}
+              min={0}
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10);
+                setBaselineUnits(isNaN(val) ? 0 : Math.max(0, val));
               }}
               style={{ width: "80px", marginLeft: "8px", padding: "4px 8px", fontSize: "14px" }}
             />
@@ -100,7 +114,7 @@ export default function DiscountSimulator() {
               <s-table-header format="numeric">Current Margin %</s-table-header>
               <s-table-header format="numeric">New Price</s-table-header>
               <s-table-header format="numeric">New Margin %</s-table-header>
-              <s-table-header format="numeric">Break-even Increase %</s-table-header>
+              <s-table-header format="numeric">Break-even Units</s-table-header>
               <s-table-header>Status</s-table-header>
             </s-table-header-row>
             <s-table-body>
@@ -109,18 +123,19 @@ export default function DiscountSimulator() {
                   product.price,
                   product.cost,
                   discountPercent,
+                  baselineUnits,
                 );
 
                 let badgeTone: "critical" | "warning" | "success" | undefined;
                 let badgeLabel: string | undefined;
 
-                if (impact.breakEvenIncreasePercent === null) {
+                if (impact.breakEvenQuantity === null) {
                   badgeTone = "critical";
                   badgeLabel = "No Profit";
                 } else if (impact.newMarginPercent < 20) {
                   badgeTone = "critical";
                   badgeLabel = "Low Margin";
-                } else if (impact.breakEvenIncreasePercent > 50) {
+                } else if (impact.breakEvenIncreasePercent !== null && impact.breakEvenIncreasePercent > 50) {
                   badgeTone = "warning";
                   badgeLabel = "High Break-even";
                 }
@@ -140,9 +155,18 @@ export default function DiscountSimulator() {
                       {impact.newMarginPercent.toFixed(1)}%
                     </s-table-cell>
                     <s-table-cell>
-                      {impact.breakEvenIncreasePercent !== null
-                        ? `${impact.breakEvenIncreasePercent.toFixed(1)}%`
-                        : "—"}
+                      {impact.breakEvenQuantity !== null ? (
+                        <>
+                          {Math.round(impact.breakEvenQuantity)}
+                          {impact.breakEvenIncreasePercent !== null && (
+                            <s-text variant="bodySmall" tone="neutral">
+                              {" "}(+{impact.breakEvenIncreasePercent.toFixed(0)}% increase required)
+                            </s-text>
+                          )}
+                        </>
+                      ) : (
+                        <s-badge tone="critical">No Profit</s-badge>
+                      )}
                     </s-table-cell>
                     <s-table-cell>
                       {badgeLabel ? (
